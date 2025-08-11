@@ -88,10 +88,10 @@ void liberar_bst(NoVilao* raiz);
 
 // Funções do Módulo 3: Diário de Bordo (Pilha)
 PilhaDiario* criar_pilha_diario();
-void push_missao_diario(NoMissaoConcluida** topo_pilha, Missao missao_concluida);
-void ver_ultima_vitoria(const NoMissaoConcluida* topo_pilha);
-void liberar_pilha(NoMissaoConcluida** topo_pilha);
-void pilha_esta_vazia();
+void push_missao_diario(PilhaDiario* pilha, Missao missao_concluida);
+void ver_ultima_vitoria(const PilhaDiario* pilha);
+void liberar_pilha(PilhaDiario* pilha);
+int pilha_esta_vazia(const PilhaDiario* pilha);
 
 // Funções do Módulo 4: Arsenal e Plano de Ação (Lista Encadeada)
 void adicionar_equipamento_lista(NoEquipamento** cabeca_lista, Equipamento novo_equipamento);
