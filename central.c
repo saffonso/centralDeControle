@@ -143,6 +143,7 @@ void liberar_heap(HeapMissoes* heap) {
     printf("Painel de Alertas de Missões desligado.\n");
 }
 
+// Módulo 2
 
 // cria e copia os dados para os nos
 static NoVilao* criar_no_vilao(const Vilao* vilao) {
@@ -305,5 +306,70 @@ void liberar_bst(NoVilao* raiz) {
     liberar_bst(raiz->esquerda);
     liberar_bst(raiz->direita);
     free(raiz);
+}
+
+// Módulo 3
+
+PilhaDiario* criar_pilha_diario() {
+    PilhaDiario* pilha = (PilhaDiario*) malloc(sizeof(PilhaDiario));
+    if (!pilha) {
+        perror("Falha ao alocar memória para a Pilha do Diário");
+        return NULL;
+    }
+    pilha->topo = NULL;
+    pilha->n = 0;
+    printf("Diário de Bordo inicializado e pronto para registrar vitórias.\n");
+    return pilha;
+}
+
+void push_missao_diario(PilhaDiario* pilha, Missao missao_concluida) {
+    NoMissaoConcluida* novo_no = (NoMissaoConcluida*) malloc(sizeof(NoMissaoConcluida));
+    if (!novo_no) {
+        perror("Falha crítica: Não foi possível alocar memória para registrar vitória no Diário");
+        return;
+    }
+
+    novo_no->dados = missao_concluida;
+    novo_no->proximo = pilha->topo;
+
+    pilha->topo = novo_no;
+    pilha->n++;
+}
+
+
+int pilha_esta_vazia(const PilhaDiario* pilha) {
+    return pilha->n == 0;
+}
+
+void ver_ultima_vitoria(const PilhaDiario* pilha) {
+    printf("\n--- DIÁRIO DE BORDO DO MESTRE SPLINTER ---\n");
+    
+    if (pilha_esta_vazia(pilha)) {
+        printf("  O Diário está vazio. Nenhuma missão foi concluída com sucesso ainda.\n");
+    } else {
+        const Missao* ultima_vitoria = &pilha->topo->dados;
+        printf("  Última vitória registrada (%d no total):\n", pilha->n);
+        printf("    Descrição: %s\n", ultima_vitoria->descricao);
+        printf("    Local: %s\n", ultima_vitoria->local);
+        printf("    Nível de Ameaça enfrentado: %d\n", ultima_vitoria->nivel_ameaca);
+    }
+    printf("-------------------------------------------\n");
+}
+
+
+void liberar_pilha(PilhaDiario* pilha) {
+    if (!pilha) return;
+
+    NoMissaoConcluida* atual = pilha->topo;
+    NoMissaoConcluida* proximo_no;
+
+    while (atual != NULL) {
+        proximo_no = atual->proximo; 
+        free(atual);            
+        atual = proximo_no;         
+    }
+
+    free(pilha);
+    printf("Diário de Bordo arquivado e memória liberada.\n");
 }
 

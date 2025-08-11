@@ -58,6 +58,10 @@ typedef struct NoMissaoConcluida {
     Missao dados;
     struct NoMissaoConcluida* proximo;
 } NoMissaoConcluida;
+typedef struct {
+    NoMissaoConcluida* topo; 
+    int n;
+} PilhaDiario;
 
 // Módulo 4: Estrutura para os Nós da Lista de Equipamentos (Lista Encadeada)
 typedef struct NoEquipamento {
@@ -83,9 +87,11 @@ NoVilao* carregar_viloes_do_arquivo(const char* nome_arquivo); // Carrega do vil
 void liberar_bst(NoVilao* raiz);
 
 // Funções do Módulo 3: Diário de Bordo (Pilha)
+PilhaDiario* criar_pilha_diario();
 void push_missao_diario(NoMissaoConcluida** topo_pilha, Missao missao_concluida);
 void ver_ultima_vitoria(const NoMissaoConcluida* topo_pilha);
 void liberar_pilha(NoMissaoConcluida** topo_pilha);
+void pilha_esta_vazia();
 
 // Funções do Módulo 4: Arsenal e Plano de Ação (Lista Encadeada)
 void adicionar_equipamento_lista(NoEquipamento** cabeca_lista, Equipamento novo_equipamento);
