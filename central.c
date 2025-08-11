@@ -310,4 +310,3 @@ void liberar_bst(NoVilao* raiz) {
 }
 
 
->>>>>>> Stashed changes
