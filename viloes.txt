@@ -1,0 +1,30 @@
+Destruidor,10,Ego e excesso de confiança
+Krang,9,Vulnerável fora do corpo robótico
+Bebop,7,Enganado por distrações
+Rocksteady,7,Táticas complexas
+Karai,8,Lealdade dividida
+Baxter Stockman,6,Impulsos eletromagnéticos
+Leatherhead,8,Fúria descontrolada
+Slash,9,Sua própria teimosia
+Rei Rato,7,Sons de alta frequência
+Tokka,6,Guloseimas e doces
+Rahzar,6,Ataques baseados em gelo
+Fishface,7,Ambientes secos
+Dogpound,7,Agilidade e velocidade
+Mondo Gecko,5,Seu skate
+Wingnut,6,Barulhos muito altos
+Scumbug,5,Pesticidas e inseticidas
+Muckman,6,Água limpa
+Mutagen Man,7,Contenção de seu líquido mutagênico
+General Traag,8,Armamento de tecnologia terrestre
+Granitor,7,Terreno instável
+Soldado do Clã do Pé,3,Trabalho em equipe das tartarugas
+Ninja de Elite do Clã,5,Ataques imprevisíveis
+Tatsu,7,Desafiado em sua autoridade
+Hun,6,Sua ganância por poder
+Purple Dragon Thug,2,intimidação em grupo
+Tiger Claw,8,Sua cauda é um ponto cego
+Agent Bishop,8,Sua própria paranoia
+Armaggon,9,Luz solar intensa
+Lord Dregg,10,Necessidade constante de energia
+Triceraton Soldier,7,Armas de plasma sobrecarregam
