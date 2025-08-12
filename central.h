@@ -6,18 +6,25 @@
 #include <string.h>
 #include <time.h>
 
-
 typedef enum {
     DISPONIVEL,
     EM_MISSAO,
     FERIDO
 } StatusTartaruga;
 
+typedef enum {
+    RESULTADO_NAO_DEFINIDO,
+    VITORIA_PERFEITA,
+    VITORIA_COM_CUSTO,
+    DERROTA
+} ResultadoBatalha;
+
 typedef struct {
     char nome[50];
     StatusTartaruga status;
     float nivel;
-    int missoes_ferido_restantes; // Contador para saber quando volta a ficar disponível
+    int missoes_ferido_restantes;
+    char equipamento[50]; // Equipamento atribuído à tartaruga
 } Tartaruga;
 
 typedef struct {
@@ -31,6 +38,7 @@ typedef struct {
     char local[100];
     int nivel_ameaca;
     unsigned int id_chegada;
+    ResultadoBatalha resultado_batalha;
 } Missao;
 
 typedef struct {
@@ -38,74 +46,65 @@ typedef struct {
 } Equipamento;
 
 
+//MODULO 1: PAINEL DE ALERTA(HEAP DE PRIORIDADE)
 
-// Módulo 1: Estrutura para o Painel de Alertas (Heap de Missões)
 typedef struct {
-    Missao* missoes; // Ponteiro para um array de missões
+    Missao* missoes;
     int tamanho_atual;
     int capacidade;
 } HeapMissoes;
 
-// Módulo 2: Estrutura para os Nós da Árvore de Vilões
+// Funções do Módulo 1
+HeapMissoes* criar_heap(int capacidade);
+void inserir_missao_heap(HeapMissoes* heap, Missao nova_missao);
+Missao remover_proxima_missao(HeapMissoes* heap);
+void mostrar_proxima_missao(const HeapMissoes* heap);
+void liberar_heap(HeapMissoes* heap);
+
+//MODULO2: ARQ VILOES ARV BIN BUSCA
+
 typedef struct NoVilao {
     Vilao dados;
     struct NoVilao* esquerda;
     struct NoVilao* direita;
 } NoVilao;
 
-// Módulo 3: Estrutura para os Nós do Diário de Bordo (Pilha de Missões Concluídas)
+// Funções do Módulo 2
+NoVilao* inserir_vilao_bst(NoVilao* raiz, Vilao novo_vilao);
+NoVilao* buscar_vilao_bst(NoVilao* raiz, const char* nome_vilao);
+NoVilao* remover_vilao_bst(NoVilao* raiz, const char* nome_vilao);
+void listar_viloes_em_ordem(NoVilao* raiz);
+NoVilao* carregar_viloes_do_arquivo(const char* nome_arquivo);
+void liberar_bst(NoVilao* raiz);
+
+//MODULO 3: DIARIO  DE BORDO: PILHA
+
 typedef struct NoMissaoConcluida {
     Missao dados;
     struct NoMissaoConcluida* proximo;
 } NoMissaoConcluida;
+
 typedef struct {
     NoMissaoConcluida* topo; 
     int n;
 } PilhaDiario;
 
-// Módulo 4: Estrutura para os Nós da Lista de Equipamentos (Lista Encadeada)
-typedef struct NoEquipamento {
-    Equipamento dados;
-    struct NoEquipamento* proximo;
-} NoEquipamento;
-
-
-
-// Funções do Módulo 1: Painel de Alertas (Heap)
-HeapMissoes* criar_heap(int capacidade);
-void inserir_missao_heap(HeapMissoes* heap, Missao nova_missao);
-Missao remover_proxima_missao(HeapMissoes* heap); // Remove e retorna a de maior prioridade
-void mostrar_proxima_missao(const HeapMissoes* heap);
-void liberar_heap(HeapMissoes* heap);
-
-// Funções do Módulo 2: Arquivos de Vilões (BST)
-NoVilao* inserir_vilao_bst(NoVilao* raiz, Vilao novo_vilao);
-NoVilao* buscar_vilao_bst(NoVilao* raiz, const char* nome_vilao);
-NoVilao* remover_vilao_bst(NoVilao* raiz, const char* nome_vilao);
-void listar_viloes_em_ordem(NoVilao* raiz); // Função extra para visualização
-NoVilao* carregar_viloes_do_arquivo(const char* nome_arquivo); // Carrega do viloes.txt
-void liberar_bst(NoVilao* raiz);
-
-// Funções do Módulo 3: Diário de Bordo (Pilha)
+// Funções do Módulo 3
 PilhaDiario* criar_pilha_diario();
 void push_missao_diario(PilhaDiario* pilha, Missao missao_concluida);
 void ver_ultima_vitoria(const PilhaDiario* pilha);
+void listar_historico_completo(const PilhaDiario* pilha);
 void liberar_pilha(PilhaDiario* pilha);
 int pilha_esta_vazia(const PilhaDiario* pilha);
 
-// Funções do Módulo 4: Arsenal e Plano de Ação (Lista Encadeada)
-void adicionar_equipamento_lista(NoEquipamento** cabeca_lista, Equipamento novo_equipamento);
-void remover_equipamento_lista(NoEquipamento** cabeca_lista, const char* nome_equipamento);
-void mostrar_equipamentos_da_missao(const NoEquipamento* cabeca_lista);
-void liberar_lista_equipamentos(NoEquipamento** cabeca_lista);
-int verificar_equipamento_na_lista(const NoEquipamento* cabeca_lista, const char* nome_equipamento);
+//MODULO 4 E ARSENAL
 
-
-// Funções da Lógica Central e Batalha
+// Funções de Sistema e Interface
 void inicializar_sistema(Tartaruga equipe[4], Equipamento arsenal[], int tamanho_arsenal);
 void mostrar_menu_principal();
-void iniciar_nova_missao(HeapMissoes* painel_alertas, NoVilao* arvore_viloes, NoMissaoConcluida** diario_bordo, Tartaruga equipe[4], Equipamento arsenal[], int tamanho_arsenal);
-void resolver_batalha(Missao missao_atual, Tartaruga* tartarugas_na_missao[], int num_tartarugas, NoEquipamento* equipamentos_selecionados, NoMissaoConcluida** diario_bordo);
 
+// Funções de Batalha e Missões
+void iniciar_nova_missao(HeapMissoes* painel_alertas, NoVilao* arvore_viloes, PilhaDiario* diario_bordo, Tartaruga equipe[4], Equipamento arsenal[], int tamanho_arsenal);
+void resolver_batalha(Missao missao_atual, Tartaruga* tartarugas_na_missao[], int num_tartarugas, PilhaDiario* diario_bordo);
 
 #endif 

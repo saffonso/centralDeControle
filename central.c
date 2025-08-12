@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Módulo 1
+// MODULO 1 PAINEL DE ALERTA (HEAP DE PRIORIDADE)
+
 // Funções Privadas para auxiliar no heap
 
 // Função para trocar duas missões de lugar no array do heap
@@ -101,7 +102,7 @@ Missao remover_proxima_missao(HeapMissoes* heap) {
     if (heap->tamanho_atual == 0) {
         fprintf(stderr, "Erro: Não há missões pendentes no painel de alertas.\n");
         // Retorna uma missão "vazia" em caso de erro. O ideal é que o chamador verifique o tamanho antes.
-        Missao missao_vazia = { "Nenhuma", "Nenhum", 0, 0 };
+        Missao missao_vazia = { "Nenhuma", "Nenhum", 0, 0, RESULTADO_NAO_DEFINIDO };
         return missao_vazia;
     }
 
@@ -143,8 +144,7 @@ void liberar_heap(HeapMissoes* heap) {
     printf("Painel de Alertas de Missões desligado.\n");
 }
 
-// Módulo 2
-
+//MODULO 2: ARQ DE VILOES (ARV DE BUSCA)
 // cria e copia os dados para os nos
 static NoVilao* criar_no_vilao(const Vilao* vilao) {
     NoVilao* novo = (NoVilao*)malloc(sizeof(NoVilao));
@@ -308,7 +308,8 @@ void liberar_bst(NoVilao* raiz) {
     free(raiz);
 }
 
-// Módulo 3
+
+//MODULO 3: DIARIO DE BORDO (PILHA)
 
 PilhaDiario* criar_pilha_diario() {
     PilhaDiario* pilha = (PilhaDiario*) malloc(sizeof(PilhaDiario));
@@ -345,17 +346,79 @@ void ver_ultima_vitoria(const PilhaDiario* pilha) {
     printf("\n--- DIÁRIO DE BORDO DO MESTRE SPLINTER ---\n");
     
     if (pilha_esta_vazia(pilha)) {
-        printf("  O Diário está vazio. Nenhuma missão foi concluída com sucesso ainda.\n");
+        printf("  O Diário está vazio. Nenhuma missão foi concluída ainda.\n");
     } else {
-        const Missao* ultima_vitoria = &pilha->topo->dados;
-        printf("  Última vitória registrada (%d no total):\n", pilha->n);
-        printf("    Descrição: %s\n", ultima_vitoria->descricao);
-        printf("    Local: %s\n", ultima_vitoria->local);
-        printf("    Nível de Ameaça enfrentado: %d\n", ultima_vitoria->nivel_ameaca);
+        // Busca a última vitória na pilha
+        NoMissaoConcluida* atual = pilha->topo;
+        const Missao* ultima_vitoria = NULL;
+        int total_vitorias = 0;
+        
+        while (atual != NULL) {
+            if (atual->dados.resultado_batalha == VITORIA_PERFEITA || 
+                atual->dados.resultado_batalha == VITORIA_COM_CUSTO) {
+                if (ultima_vitoria == NULL) {
+                    ultima_vitoria = &atual->dados; // Primeira vitória encontrada (mais recente)
+                }
+                total_vitorias++;
+            }
+            atual = atual->proximo;
+        }
+        
+        if (ultima_vitoria == NULL) {
+            printf("  Nenhuma vitória registrada ainda. As tartarugas precisam treinar mais!\n");
+        } else {
+            printf("  Última vitória registrada (%d vitórias no total):\n", total_vitorias);
+            printf("    Descrição: %s\n", ultima_vitoria->descricao);
+            printf("    Local: %s\n", ultima_vitoria->local);
+            printf("    Nível de Ameaça enfrentado: %d\n", ultima_vitoria->nivel_ameaca);
+            if (ultima_vitoria->resultado_batalha == VITORIA_PERFEITA) {
+                printf("    Resultado:  VITÓRIA PERFEITA!\n");
+            } else {
+                printf("    Resultado:  VITÓRIA COM CUSTO\n");
+            }
+        }
     }
     printf("-------------------------------------------\n");
 }
 
+void listar_historico_completo(const PilhaDiario* pilha) {
+    printf("\n--- HISTÓRICO COMPLETO DE BATALHAS ---\n");
+    
+    if (pilha_esta_vazia(pilha)) {
+        printf("  O Diário está vazio. Nenhuma batalha foi registrada ainda.\n");
+    } else {
+        printf("  Total de batalhas registradas: %d\n\n", pilha->n);
+        
+        NoMissaoConcluida* atual = pilha->topo;
+        int contador = 1;
+        
+        while (atual != NULL) {
+            printf("  %d) %s\n", contador, atual->dados.descricao);
+            printf("     Local: %s\n", atual->dados.local);
+            printf("     Nível de Ameaça: %d\n", atual->dados.nivel_ameaca);
+            
+            // Mostra o resultado da batalha
+            switch (atual->dados.resultado_batalha) {
+                case VITORIA_PERFEITA:
+                    printf("     Resultado:  VITÓRIA PERFEITA!\n");
+                    break;
+                case VITORIA_COM_CUSTO:
+                    printf("     Resultado:  VITÓRIA COM CUSTO\n");
+                    break;
+                case DERROTA:
+                    printf("     Resultado:  DERROTA\n");
+                    break;
+                default:
+                    printf("     Resultado:  NÃO DEFINIDO\n");
+                    break;
+            }
+            printf("\n");
+            atual = atual->proximo;
+            contador++;
+        }
+    }
+    printf("------------------------------------------\n");
+}
 
 void liberar_pilha(PilhaDiario* pilha) {
     if (!pilha) return;
@@ -373,3 +436,263 @@ void liberar_pilha(PilhaDiario* pilha) {
     printf("Diário de Bordo arquivado e memória liberada.\n");
 }
 
+// MODULO 4: Arsenal E PLANO DE ACAO
+
+
+//FUNCOES AUXILIARES
+
+static const char* arma_favorita_da_tartaruga(const char* nome_tartaruga) {
+    if (strcmp(nome_tartaruga, "Leonardo") == 0) return "Katanas";
+    if (strcmp(nome_tartaruga, "Donatello") == 0) return "Bo";
+    if (strcmp(nome_tartaruga, "Michelangelo") == 0) return "Nunchakus";
+    if (strcmp(nome_tartaruga, "Raphael") == 0) return "Sai";
+    return NULL;
+}
+
+
+static void limitar_nivel(Tartaruga* t) {
+    if (t->nivel < 1.0f) t->nivel = 1.0f;
+    if (t->nivel > 10.0f) t->nivel = 10.0f;
+}
+
+static void decrementar_ferimentos_pos_missao(Tartaruga equipe[4]) {
+    for (int i = 0; i < 4; i++) {
+        if (equipe[i].status == FERIDO && equipe[i].missoes_ferido_restantes > 0) {
+            equipe[i].missoes_ferido_restantes--;
+            if (equipe[i].missoes_ferido_restantes == 0) {
+                equipe[i].status = DISPONIVEL;
+            }
+        }
+    }
+}
+
+//INICIALIZAR O SISTEMA
+
+void inicializar_sistema(Tartaruga equipe[4], Equipamento arsenal[], int tamanho_arsenal) {
+    
+    const char* nomes[4] = {"Leonardo", "Donatello", "Raphael", "Michelangelo"};
+    for (int i = 0; i < 4; i++) {
+        strncpy(equipe[i].nome, nomes[i], sizeof(equipe[i].nome) - 1);
+        equipe[i].nome[sizeof(equipe[i].nome) - 1] = '\0';
+        equipe[i].status = DISPONIVEL;
+        equipe[i].nivel = 5.0f; //nível inicial 
+        equipe[i].missoes_ferido_restantes = 0;
+        strcpy(equipe[i].equipamento, "");
+    }
+
+    
+    const char* itens_padrao[] = {
+        "Katanas", "Bo", "Nunchakus", "Sai", "Bumerangue-Pizza", "Comunicador-Casco"
+    };
+    int qtd_padrao = (int)(sizeof(itens_padrao) / sizeof(itens_padrao[0]));
+    int limite = tamanho_arsenal < qtd_padrao ? tamanho_arsenal : qtd_padrao;
+    for (int i = 0; i < limite; i++) {
+        strncpy(arsenal[i].nome, itens_padrao[i], sizeof(arsenal[i].nome) - 1);
+        arsenal[i].nome[sizeof(arsenal[i].nome) - 1] = '\0';
+    }
+}
+
+//INTERFACE
+
+void mostrar_menu_principal() {
+    printf("\n========= CENTRAL DE COMANDO DAS TARTARUGAS NINJA =========\n");
+    printf("1. Ver Próxima Missão Prioritária\n");
+    printf("2. Iniciar Missão\n");
+    printf("3. Ver Última Vitória (Diário de Bordo)\n");
+    printf("4. Ver Histórico Completo de Batalhas\n");
+    printf("5. Listar Arquivos de Vilões\n");
+    printf("6. Adicionar Nova Missão (Simulação de Alerta)\n");
+    printf("0. Sair da Central de Comando\n");
+    printf("===========================================================\n");
+    printf("Escolha uma opção: ");
+}
+
+//LOGICA PRINCIPAL
+
+void resolver_batalha(Missao missao_atual,
+                      Tartaruga* tartarugas_na_missao[],
+                      int num_tartarugas,
+                      PilhaDiario* diario_bordo) {
+    // Calcula força média
+    float soma = 0.0f;
+    for (int i = 0; i < num_tartarugas; i++) {
+        soma += tartarugas_na_missao[i]->nivel;
+    }
+    float forca_media = (num_tartarugas > 0) ? (soma / (float)num_tartarugas) : 0.0f;
+
+    // Bônus por arma favorita (+0.5 para cada tartaruga com sua arma favorita)
+    float bonus = 0.0f;
+    for (int i = 0; i < num_tartarugas; i++) {
+        const char* favorita = arma_favorita_da_tartaruga(tartarugas_na_missao[i]->nome);
+        if (favorita && strcmp(tartarugas_na_missao[i]->equipamento, favorita) == 0) {
+            bonus += 0.5f; // +0.5 por cada tartaruga com arma favorita
+        }
+    }
+
+    // Sorte e Caos
+    int sorte = (rand() % 5) - 2;        // -2..+2
+    float caos = (float)rand() / (float)RAND_MAX; // 0..1
+
+    float resultado_final = (forca_media + bonus) - (float)missao_atual.nivel_ameaca + (float)sorte - caos;
+
+    printf("\n=== RESOLUÇÃO DA BATALHA ===\n");
+    printf("Missão: %s (%s) — Nível de Ameaça: %d\n", missao_atual.descricao, missao_atual.local, missao_atual.nivel_ameaca);
+    printf("Equipe e Equipamentos:\n");
+    for (int i = 0; i < num_tartarugas; i++) {
+        printf("  %s", tartarugas_na_missao[i]->nome);
+        if (strlen(tartarugas_na_missao[i]->equipamento) > 0) {
+            printf(" - %s", tartarugas_na_missao[i]->equipamento);
+        }
+        printf("\n");
+    }
+    printf("Força média: %.2f | Bônus: %.2f | Sorte: %d | Caos: %.2f\n", forca_media, bonus, sorte, caos);
+    printf("Resultado Final: %.2f\n", resultado_final);
+
+    if (resultado_final > 3.0f) {
+        printf("\nVitória Perfeita! Booyakasha!\n");
+        missao_atual.resultado_batalha = VITORIA_PERFEITA;
+        // Recupera e sobe nível
+        for (int i = 0; i < num_tartarugas; i++) {
+            tartarugas_na_missao[i]->status = DISPONIVEL;
+            tartarugas_na_missao[i]->nivel += 0.3f;
+            limitar_nivel(tartarugas_na_missao[i]);
+        }
+    } else if (resultado_final >= 0.0f) {
+        printf("\nVitória com Custo!\n");
+        missao_atual.resultado_batalha = VITORIA_COM_CUSTO;
+        // Um ferido aleatório
+        if (num_tartarugas > 0) {
+            int idx_ferido = rand() % num_tartarugas;
+            for (int i = 0; i < num_tartarugas; i++) {
+                if (i == idx_ferido) {
+                    tartarugas_na_missao[i]->status = FERIDO;
+                    tartarugas_na_missao[i]->missoes_ferido_restantes = 2;
+                } else {
+                    tartarugas_na_missao[i]->status = DISPONIVEL;
+                    tartarugas_na_missao[i]->nivel += 0.2f;
+                    limitar_nivel(tartarugas_na_missao[i]);
+                }
+            }
+        }
+    } else {
+        printf("\nDerrota... Recuar e reavaliar.\n");
+        missao_atual.resultado_batalha = DERROTA;
+        // Todos feridos
+        for (int i = 0; i < num_tartarugas; i++) {
+            tartarugas_na_missao[i]->status = FERIDO;
+            tartarugas_na_missao[i]->missoes_ferido_restantes = 2; // tempo definido pelo programador
+        }
+    }
+    
+    // Registra todas as batalhas no diário do Mestre Splinter
+    if (diario_bordo) push_missao_diario(diario_bordo, missao_atual);
+}
+
+// MISSOES
+
+void iniciar_nova_missao(HeapMissoes* painel_alertas,
+                         NoVilao* arvore_viloes,
+                         PilhaDiario* diario_bordo,
+                         Tartaruga equipe[4],
+                         Equipamento arsenal[],
+                         int tamanho_arsenal) {
+    (void)arvore_viloes; // por ora, consulta opcional
+    if (painel_alertas == NULL || painel_alertas->tamanho_atual == 0) {
+        printf("\nNenhuma missão disponível para iniciar.\n");
+        return;
+    }
+
+    // Seleciona missão
+    Missao missao = remover_proxima_missao(painel_alertas);
+    printf("\nIniciando missão: %s (%s) — Ameaça %d\n", missao.descricao, missao.local, missao.nivel_ameaca);
+
+    // Verifica se há tartarugas disponíveis
+    int tartarugas_disponiveis = 0;
+    for (int i = 0; i < 4; i++) {
+        if (equipe[i].status == DISPONIVEL) {
+            tartarugas_disponiveis++;
+        }
+    }
+    
+    if (tartarugas_disponiveis == 0) {
+        printf("\n NENHUMA TARTARUGA DISPONÍVEL!\n");
+        printf("Todas as tartarugas estão feridas ou em missão.\n");
+        printf("Aguardando recuperação... (tempo passa)\n");
+        
+        // O tempo passa, ferimentos cicatrizam naturalmente
+        decrementar_ferimentos_pos_missao(equipe);
+        
+        // Recoloca a missão no heap (não foi executada)
+        inserir_missao_heap(painel_alertas, missao);
+        printf("Missão reagendada para quando houver equipe disponível.\n");
+        return;
+    }
+
+    // Seleciona equipe (1 a 4, somente disponíveis)
+    Tartaruga* selecionadas[4];
+    int num_sel = 0;
+    int continuar = 1;
+    while (continuar) {
+        printf("\nEquipe atual (%d/4): ", num_sel);
+        for (int i = 0; i < num_sel; i++) printf("%s%s", selecionadas[i]->nome, (i < num_sel-1)?", ":"\n");
+        printf("Tartarugas disponíveis:\n");
+        for (int i = 0; i < 4; i++) {
+            if (equipe[i].status == DISPONIVEL) {
+                printf("  %d) %s (nível %.1f)\n", i+1, equipe[i].nome, equipe[i].nivel);
+            } else if (equipe[i].status == FERIDO) {
+                printf("  %d) %s (FERIDO, faltam %d missões)\n", i+1, equipe[i].nome, equipe[i].missoes_ferido_restantes);
+            } else {
+                printf("  %d) %s (EM MISSÃO)\n", i+1, equipe[i].nome);
+            }
+        }
+        printf("Escolha o número da tartaruga para adicionar (0 para finalizar, mínimo 1): ");
+        int opc;
+        if (scanf("%d", &opc) != 1) {
+            while (getchar() != '\n');
+            continue;
+        }
+        if (opc == 0) {
+            if (num_sel >= 1) continuar = 0; else printf("Selecione pelo menos 1 tartaruga.\n");
+        } else if (opc >= 1 && opc <= 4) {
+            Tartaruga* t = &equipe[opc-1];
+            if (t->status != DISPONIVEL) {
+                printf("%s não está disponível.\n", t->nome);
+            } else if (num_sel >= 4) {
+                printf("Equipe cheia.\n");
+            } else {
+                // evita duplicar
+                int ja = 0; for (int i = 0; i < num_sel; i++) if (selecionadas[i] == t) ja = 1;
+                if (!ja) {
+                    selecionadas[num_sel++] = t;
+                    t->status = EM_MISSAO;
+                }
+            }
+        }
+    }
+
+    // Seleciona equipamentos para cada tartaruga
+    printf("\n--- SELEÇÃO DE EQUIPAMENTOS ---\n");
+    printf("Arsenal disponível:\n");
+    for (int i = 0; i < tamanho_arsenal; i++) {
+        printf("  %d) %s\n", i+1, arsenal[i].nome);
+    }
+    
+    for (int i = 0; i < num_sel; i++) {
+        printf("\nEquipamento para %s (0 para nenhum): ", selecionadas[i]->nome);
+        int escolha;
+        if (scanf("%d", &escolha) == 1) {
+            if (escolha == 0) {
+                strcpy(selecionadas[i]->equipamento, "");
+            } else if (escolha >= 1 && escolha <= tamanho_arsenal) {
+                strcpy(selecionadas[i]->equipamento, arsenal[escolha-1].nome);
+                printf(" %s equipado com %s!\n", selecionadas[i]->nome, arsenal[escolha-1].nome);
+            }
+        }
+    }
+
+    // Resolve a batalha
+    resolver_batalha(missao, selecionadas, num_sel, diario_bordo);
+
+    // Decrementa ferimentos globais
+    decrementar_ferimentos_pos_missao(equipe);
+}
